@@ -5,19 +5,19 @@ from ultralytics import YOLO
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 device = 'mps' if torch.backends.mps.is_available() else device
 
-model = YOLO('./output/yolo11n-pose-train-best.pt')
+model = YOLO('./output/last.pt')
 
 # Train the model
-model.train(
-    data='./dataset/dataset.yaml', 
-    epochs=100, 
-    imgsz=640, 
-    batch=16,
-    patience=20,
-    device="mps",
-)
+# model.train(
+#     data='./dataset/dataset.yaml', 
+#     epochs=100, 
+#     imgsz=640, 
+#     batch=16,
+#     patience=20,
+#     device="mps",
+# )
 
-# results = model(0, show=True)
+results = model(0, show=True)
 
 # for result in results:
 #     print(result.boxes.xyxy)  # x1, y1, x2, y2
