@@ -13,8 +13,6 @@ dist-ssr
 *.local
 
 # Editor directories and files
-.vscode/*
-!.vscode/extensions.json
 .idea
 .DS_Store
 *.suo
@@ -27,5 +25,3 @@ dataset
 output
 runs
 env
-!model/dataset/.gitkeep
-!model/output/.gitkeep
