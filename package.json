@@ -1,6 +1,21 @@
 {
   "name": "@app/monorepo",
   "scripts": {
-    "dev": "fastapi dev ./apps/server/main.py --port 4000"
+    "dev": "fastapi dev ./apps/server/main.py --port 4000",
+    "start": "python ./apps/server/app.py",
+    "fmt": "prettier --write ."
+  },
+  "devDependencies": {
+    "prettier": "3.6.2"
+  },
+  "pnpm": {
+    "neverBuiltDependencies": []
+  },
+  "prettier": {
+    "singleQuote": true,
+    "printWidth": 80,
+    "tabWidth": 2,
+    "semi": false,
+    "arrowParens": "avoid"
   }
 }
