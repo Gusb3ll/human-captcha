@@ -1,31 +1,17 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "envMode": "loose",
-  "globalEnv": [
-    "NODE_ENV"
-  ],
-  "globalDependencies": [
-    "package.json",
-    "pnpm-lock.yaml"
-  ],
+  "globalEnv": ["NODE_ENV"],
+  "globalDependencies": ["package.json", "pnpm-lock.yaml"],
   "tasks": {
     "dev": {
       "cache": false,
       "persistent": true
     },
     "build": {
-      "dependsOn": [
-        "^build"
-      ],
-      "inputs": [
-        "$TURBO_DEFAULT$",
-        ".env*"
-      ],
-      "outputs": [
-        ".next/**",
-        "!.next/cache/**",
-        "dist/**"
-      ]
+      "dependsOn": ["^build"],
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
     },
     "start": {
       "cache": false,
