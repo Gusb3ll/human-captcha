@@ -15,10 +15,7 @@ const App = () => {
 
   useInterval(() => {
     if (webcamRef.current) {
-      const image = webcamRef.current.getScreenshot({
-        width: 640,
-        height: 480,
-      })
+      const image = webcamRef.current.getScreenshot({ width: 640, height: 480 })
       if (image) {
         sendMessage(image)
       }
