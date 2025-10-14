@@ -7,7 +7,5 @@ next-env.d.ts
 .DS_Store
 
 __pycache__
-dataset
-output
 runs
 env
