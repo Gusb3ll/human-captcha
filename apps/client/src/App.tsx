@@ -1,26 +1,28 @@
 import { useRef } from 'react'
 import useWebSocket from 'react-use-websocket'
 import Webcam from 'react-webcam'
-import { getConnectionStatus } from './utils'
+import { formatPredictions, getConnectionStatus } from './utils'
 import { useInterval } from 'usehooks-ts'
+
+import type { WebsocketResponse } from './utils/types'
 
 const App = () => {
   const webcamRef = useRef<Webcam>(null)
 
-  const { sendMessage, lastJsonMessage, readyState } = useWebSocket<{
-    c: number
-    i: string
-    d: any[]
-  }>('ws://localhost:4000/ws/predict')
+  const { sendMessage, lastJsonMessage, readyState } =
+    useWebSocket<WebsocketResponse>('ws://localhost:4000/ws/predict')
 
   useInterval(() => {
     if (webcamRef.current) {
-      const image = webcamRef.current.getScreenshot({ width: 640, height: 480 })
-      if (image) {
-        sendMessage(image)
-      }
+      const imageBase64 = webcamRef.current.getScreenshot({
+        width: 640,
+        height: 480,
+      })
+      const imagePart = imageBase64?.split(',')[1] ?? ''
+
+      sendMessage(imagePart)
     }
-  }, 100)
+  }, 50)
 
   return (
     <div className="flex flex-col gap-4 p-8">
@@ -40,18 +42,26 @@ const App = () => {
         </div>
         <div className="flex flex-col gap-4">
           <p>rendered</p>
-          {lastJsonMessage && (
+          {lastJsonMessage && lastJsonMessage.i && (
             <img
               className="max-h-[480px] max-w-[640px]"
-              src={lastJsonMessage.i}
+              src={`data:image/jpeg;base64,${lastJsonMessage.i}`}
               alt="Processed"
             />
           )}
         </div>
       </div>
-      <div className="w-full rounded-lg bg-gray-100 p-4">
-        <p className="wrap-break-word">{JSON.stringify(lastJsonMessage?.d)}</p>
-      </div>
+      {lastJsonMessage && (
+        <div className="w-full rounded-lg bg-gray-100 p-4">
+          <p className="">
+            {JSON.stringify(
+              formatPredictions(lastJsonMessage.d, 640, 480),
+              null,
+              2,
+            )}
+          </p>
+        </div>
+      )}
     </div>
   )
 }
