@@ -1,1 +1,24 @@
 @import 'tailwindcss';
+
+html,
+body {
+  scroll-behavior: smooth;
+}
+
+@plugin 'daisyui' {
+  themes: light --default;
+}
+
+[data-theme='light'] {
+  button:hover {
+    cursor: pointer;
+  }
+
+  .input:focus {
+    outline: none;
+  }
+
+  .select:focus-within {
+    outline: none;
+  }
+}
