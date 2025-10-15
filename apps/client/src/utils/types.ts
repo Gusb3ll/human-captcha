@@ -20,9 +20,3 @@ export type Prediction = {
     visible: number[] // 21 values
   }
 }
-
-export enum Scene {
-  HOME = 'HOME',
-  CAPTCHA = 'CAPTCHA',
-  RESULT = 'RESULT',
-}

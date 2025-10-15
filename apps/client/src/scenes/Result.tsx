@@ -1,4 +1,4 @@
-import type { Scene } from '../utils/types'
+import { Scene } from '../utils/constants'
 
 type ResultProps = {
   setScene: (s: Scene) => void

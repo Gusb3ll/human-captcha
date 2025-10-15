@@ -3,18 +3,21 @@ import useWebSocket from 'react-use-websocket'
 import Webcam from 'react-webcam'
 import { useInterval } from 'usehooks-ts'
 
-import type { Scene, WebsocketResponse } from '../utils/types'
+import { Scene, SOCKET_ENDPOINT } from '../utils'
+import type { WebsocketResponse } from '../utils/types'
 import { formatPredictions, getConnectionStatus } from '../utils'
+import type { Challenge } from '../services/types'
 
 type CaptchaProps = {
+  challenge: Challenge
   setScene: (s: Scene) => void
 }
 
-const Captcha: React.FC<CaptchaProps> = ({ setScene }) => {
+const Captcha: React.FC<CaptchaProps> = ({ challenge, setScene }) => {
   const webcamRef = useRef<Webcam>(null)
 
   const { sendMessage, lastJsonMessage, readyState } =
-    useWebSocket<WebsocketResponse>('ws://localhost:4000/ws/predict')
+    useWebSocket<WebsocketResponse>(`${SOCKET_ENDPOINT}/ws/predict`)
 
   useInterval(() => {
     if (webcamRef.current) {
@@ -58,7 +61,7 @@ const Captcha: React.FC<CaptchaProps> = ({ setScene }) => {
       </div>
       {lastJsonMessage && (
         <div className="w-full rounded-lg bg-gray-100 p-4">
-          <p className="">
+          <p>
             {JSON.stringify(
               formatPredictions(lastJsonMessage.d, 640, 480),
               null,
@@ -67,6 +70,10 @@ const Captcha: React.FC<CaptchaProps> = ({ setScene }) => {
           </p>
         </div>
       )}
+      <p>challenge</p>
+      <div className="w-full rounded-lg bg-gray-100 p-4">
+        <p>{JSON.stringify(challenge, null, 2)}</p>
+      </div>
     </div>
   )
 }

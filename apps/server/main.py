@@ -4,6 +4,7 @@ from fastapi import FastAPI, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 import base64
 import json
+import random
 
 import utils
 import constants
@@ -21,7 +22,10 @@ app.add_middleware(
 
 @app.get("/challenge")
 async def get_challenge():
-    return {}
+    challenges = constants.challenges
+    challenge = random.choice(challenges)
+
+    return {"c": 0, "d": challenge}
 
 
 @app.websocket("/ws/predict")
