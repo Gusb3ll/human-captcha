@@ -1,6 +1,6 @@
 export type WebsocketResponse = {
   c: number
-  i: string
+  // i: string
   d: Prediction[]
 }
 

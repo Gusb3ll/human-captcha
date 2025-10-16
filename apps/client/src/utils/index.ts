@@ -47,7 +47,7 @@ export const formatPredictions = (
         y: hand.keypoints.y.map((val: number) =>
           normalizePosition(val, imageHeight),
         ),
-        // visible: hand.keypoints.visible.map(val => +val.toFixed(2)),
+        visible: hand.keypoints.visible.map(val => +val.toFixed(2)),
       },
     }
   })

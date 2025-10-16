@@ -59,25 +59,25 @@ async def predict_ws(sock: WebSocket):
                 results = utils.predict(model, frame)
                 result = results[0]
 
-                annotated_frame = result.plot()
-                # annotated_frame = cv2.resize(annotated_frame, (640, 480))
+                # annotated_frame = result.plot()
+                # # annotated_frame = cv2.resize(annotated_frame, (640, 480))
 
-                _, buffer = cv2.imencode(
-                    ".jpeg",
-                    annotated_frame,
-                    [
-                        int(cv2.IMWRITE_JPEG_QUALITY),
-                        75,
-                        int(cv2.IMWRITE_JPEG_OPTIMIZE),
-                        1,
-                    ],
-                )
-                img_base64 = base64.b64encode(buffer).decode("utf-8")
+                # _, buffer = cv2.imencode(
+                #     ".jpeg",
+                #     annotated_frame,
+                #     [
+                #         int(cv2.IMWRITE_JPEG_QUALITY),
+                #         75,
+                #         int(cv2.IMWRITE_JPEG_OPTIMIZE),
+                #         1,
+                #     ],
+                # )
+                # img_base64 = base64.b64encode(buffer).decode("utf-8")
 
                 await sock.send_json(
                     {
                         "c": 0,
-                        "i": img_base64,
+                        # "i": img_base64,
                         "d": json.loads(result.to_json()),
                     }
                 )

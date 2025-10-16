@@ -5,7 +5,7 @@ import { useInterval } from 'usehooks-ts'
 
 import { Scene, SOCKET_ENDPOINT } from '../utils'
 import type { WebsocketResponse } from '../utils/types'
-import { formatPredictions, getConnectionStatus } from '../utils'
+import { formatPredictions } from '../utils'
 import type { Challenge } from '../services/types'
 
 type CaptchaProps = {
@@ -13,11 +13,14 @@ type CaptchaProps = {
   setScene: (s: Scene) => void
 }
 
+const GLOBAL_OFFSET = 27
+
 const Captcha: React.FC<CaptchaProps> = ({ challenge, setScene }) => {
   const webcamRef = useRef<Webcam>(null)
 
-  const { sendMessage, lastJsonMessage, readyState } =
-    useWebSocket<WebsocketResponse>(`${SOCKET_ENDPOINT}/ws/predict`)
+  const { sendMessage, lastJsonMessage } = useWebSocket<WebsocketResponse>(
+    `${SOCKET_ENDPOINT}/ws/predict`,
+  )
 
   useInterval(() => {
     if (webcamRef.current) {
@@ -27,16 +30,16 @@ const Captcha: React.FC<CaptchaProps> = ({ challenge, setScene }) => {
       })
       const imagePart = imageBase64?.split(',')[1] ?? ''
 
-      sendMessage(imagePart)
+      if (imagePart) {
+        sendMessage(imagePart)
+      }
     }
   }, 50)
 
   return (
     <div className="flex flex-col gap-4 p-8">
-      <p>Socket: {getConnectionStatus(readyState)}</p>
       <div className="flex flex-row gap-4">
         <div className="flex flex-col gap-4">
-          <p>live</p>
           <Webcam
             ref={webcamRef}
             audio={false}
@@ -48,16 +51,43 @@ const Captcha: React.FC<CaptchaProps> = ({ challenge, setScene }) => {
             className="max-h-[480px] max-w-[640px]"
           />
         </div>
-        <div className="flex flex-col gap-4">
-          <p>rendered</p>
-          {lastJsonMessage && lastJsonMessage.i && (
-            <img
-              className="max-h-[480px] max-w-[640px]"
-              src={`data:image/jpeg;base64,${lastJsonMessage.i}`}
-              alt="Processed"
-            />
-          )}
-        </div>
+        <svg
+          className="absolute top-0 left-0 max-h-[480px] max-w-[640px]"
+          width={640}
+          height={480}
+          viewBox="0 0 640 480"
+        >
+          {lastJsonMessage?.d?.map((prediction, index: number) => (
+            <g key={index}>
+              <rect
+                x={prediction.box.x1 + GLOBAL_OFFSET}
+                y={prediction.box.y1 + GLOBAL_OFFSET}
+                width={prediction.box.x2 - prediction.box.x1}
+                height={prediction.box.y2 - prediction.box.y1}
+                fill="none"
+                stroke="lime"
+                strokeWidth="2"
+              />
+              {prediction.keypoints.x.map((x, i) => {
+                const y = prediction.keypoints.y[i]
+                const visible = prediction.keypoints.visible[i]
+                if (visible > 0.9) {
+                  return (
+                    <circle
+                      key={`k-${i}`}
+                      cx={x + GLOBAL_OFFSET}
+                      cy={y + GLOBAL_OFFSET}
+                      r="3"
+                      fill="red"
+                      stroke="white"
+                      strokeWidth="1"
+                    />
+                  )
+                }
+              })}
+            </g>
+          ))}
+        </svg>
       </div>
       {lastJsonMessage && (
         <div className="w-full rounded-lg bg-gray-100 p-4">
@@ -70,6 +100,16 @@ const Captcha: React.FC<CaptchaProps> = ({ challenge, setScene }) => {
           </p>
         </div>
       )}
+      <button
+        className="btn btn-lg"
+        onClick={() =>
+          navigator.clipboard.writeText(
+            JSON.stringify(formatPredictions(lastJsonMessage.d, 640, 480)),
+          )
+        }
+      >
+        copy
+      </button>
       <p>challenge</p>
       <div className="w-full rounded-lg bg-gray-100 p-4">
         <p>{JSON.stringify(challenge, null, 2)}</p>
