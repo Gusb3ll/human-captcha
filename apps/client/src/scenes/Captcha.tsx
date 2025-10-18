@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import useWebSocket from 'react-use-websocket'
 import Webcam from 'react-webcam'
 import { useInterval } from 'usehooks-ts'
@@ -18,6 +18,11 @@ const GLOBAL_OFFSET = 27
 const Captcha: React.FC<CaptchaProps> = ({ challenge, setScene }) => {
   const webcamRef = useRef<Webcam>(null)
 
+  const [matchedState, setMatchedState] = useState<boolean[]>(
+    new Array(challenge.x.length).fill(false),
+  )
+  const [totalMatched, setTotalMatched] = useState(0)
+
   const { sendMessage, lastJsonMessage } = useWebSocket<WebsocketResponse>(
     `${SOCKET_ENDPOINT}/ws/predict`,
   )
@@ -34,7 +39,39 @@ const Captcha: React.FC<CaptchaProps> = ({ challenge, setScene }) => {
         sendMessage(imagePart)
       }
     }
-  }, 50)
+  }, 100)
+
+  useInterval(() => {
+    if (lastJsonMessage) {
+      const normalizedPredictions = formatPredictions(
+        lastJsonMessage.d,
+        640,
+        480,
+      )
+
+      const matchedChallengeIndices = new Set<number>()
+
+      challenge.x.forEach((cx, i) => {
+        const cy = challenge.y[i]
+
+        normalizedPredictions.forEach(prediction => {
+          prediction.keypoints.x.forEach((px, j) => {
+            const py = prediction.keypoints.y[j]
+
+            if (Math.abs(cx - px) < 0.025 && Math.abs(cy - py) < 0.025) {
+              matchedChallengeIndices.add(i)
+            }
+          })
+        })
+      })
+
+      const newMatchedState = challenge.x.map((_, i) =>
+        matchedChallengeIndices.has(i),
+      )
+      setMatchedState(newMatchedState)
+      setTotalMatched(matchedChallengeIndices.size)
+    }
+  }, 100)
 
   return (
     <div className="flex flex-col gap-4 p-8">
@@ -88,6 +125,33 @@ const Captcha: React.FC<CaptchaProps> = ({ challenge, setScene }) => {
             </g>
           ))}
         </svg>
+        <svg
+          className="absolute top-0 left-0 max-h-[480px] max-w-[640px]"
+          width={640}
+          height={480}
+          viewBox="0 0 640 480"
+        >
+          <g>
+            {challenge.x.map((x, i) => {
+              const realX = x * 640
+              const realY = challenge.y[i] * 480
+
+              const matched = matchedState[i]
+
+              return (
+                <circle
+                  key={`ck-${i}`}
+                  cx={realX + GLOBAL_OFFSET}
+                  cy={realY + GLOBAL_OFFSET}
+                  r="3"
+                  fill={matched ? 'yellow' : 'blue'}
+                  stroke="white"
+                  strokeWidth="1"
+                />
+              )
+            })}
+          </g>
+        </svg>
       </div>
       {lastJsonMessage && (
         <div className="w-full rounded-lg bg-gray-100 p-4">
@@ -100,6 +164,9 @@ const Captcha: React.FC<CaptchaProps> = ({ challenge, setScene }) => {
           </p>
         </div>
       )}
+      <p>
+        Matched points: {totalMatched} / {challenge.x.length}
+      </p>
       <button
         className="btn btn-lg"
         onClick={() =>

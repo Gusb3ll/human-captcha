@@ -14,7 +14,7 @@ export const getConnectionStatus = (readyState: ReadyState) => {
 
 const normalizePosition = (val: number, dimension: number) => {
   if (dimension) {
-    return +(val / dimension).toFixed(3)
+    return +(val / dimension).toFixed(4)
   }
 
   return 0
