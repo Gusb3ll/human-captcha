@@ -2,6 +2,7 @@ config = {
     "model_path": "/Users/gusbell/Developer/projects/mlproj/apps/server/model/best.pt"
 }
 
+# For CUDA Supported Device
 # config = {
 #     "model_path": "/Users/gusbell/Developer/projects/mlproj/apps/server/model/best.engine"
 # }
