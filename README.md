@@ -1,15 +1,5 @@
 # HumanCaptcha
 
-## Dataset
-
-```
-# Ultralytics Hand Keypoints Dataset
-
-https://github.com/ultralytics/assets/releases/download/v0.0.0/hand-keypoints.zip
-
-# place in model/dataset
-```
-
 # Credits
 
 ```
