@@ -1,15 +1,16 @@
-import { useRef, useState } from 'react'
-import useWebSocket from 'react-use-websocket'
 import Webcam from 'react-webcam'
+import { useRef, useState } from 'react'
 import { useInterval } from 'usehooks-ts'
+import useWebSocket from 'react-use-websocket'
+import { FaArrowLeft, FaArrowRight } from 'react-icons/fa6'
 
+import Debug from './Debug'
+import Overlay from './Overlay'
 import { Scene, SOCKET_ENDPOINT } from '../../utils'
 import type { WebsocketResponse } from '../../utils/types'
 import { formatPredictions } from '../../utils'
 import type { Challenge } from '../../services/types'
-import Overlay from './Overlay'
-import Debug from './Debug'
-import { FaArrowLeft, FaArrowRight } from 'react-icons/fa6'
+import Loading from './Loading'
 
 type CaptchaProps = {
   challenge: Challenge
@@ -62,7 +63,7 @@ const Captcha: React.FC<CaptchaProps> = ({ challenge, setScene }) => {
           prediction.keypoints.x.forEach((px, j) => {
             const py = prediction.keypoints.y[j]
 
-            if (Math.abs(cx - px) < 0.025 && Math.abs(cy - py) < 0.025) {
+            if (Math.abs(cx - px) < 0.035 && Math.abs(cy - py) < 0.035) {
               matchedChallengeIndices.add(i)
             }
           })
@@ -77,67 +78,65 @@ const Captcha: React.FC<CaptchaProps> = ({ challenge, setScene }) => {
   }, 100)
 
   useInterval(() => {
-    if (totalMatched === challenge.x.length) {
-      setTimer(prev => {
-        if (prev > 0) {
-          return prev - 1
-        } else {
-          setScene(Scene.RESULT)
-
-          return 0
-        }
-      })
-    } else {
-      setTimer(5)
+    if (totalMatched !== challenge.x.length) {
+      return setTimer(5)
     }
+    if (timer === 0) {
+      return setScene(Scene.RESULT)
+    }
+
+    setTimer(prev => prev - 1)
   }, 1000)
 
   return (
-    <div className="flex flex-col gap-4 p-8">
-      <button
-        onClick={() => setIsDebugMode(!isDebugMode)}
-        className="btn btn-error z-999 w-fit"
-      >
-        {isDebugMode ? 'Disable' : 'Enable'} debug
-      </button>
-      <div className="flex w-full items-center justify-between">
-        <FaArrowRight size="150px" />
-        <div className="relative">
-          <Overlay
-            webcamRef={webcamRef}
+    <>
+      <Loading />
+      <div className="flex flex-col gap-4 p-8">
+        <button
+          onClick={() => setIsDebugMode(!isDebugMode)}
+          className="btn btn-error z-10 w-fit"
+        >
+          {isDebugMode ? 'Disable' : 'Enable'} debug
+        </button>
+        <div className="flex w-full items-center justify-between">
+          <FaArrowRight size="150px" />
+          <div className="relative">
+            <Overlay
+              webcamRef={webcamRef}
+              predictions={lastJsonMessage?.d ?? []}
+              challenge={challenge}
+              matchedState={matchedState}
+            />
+            <div
+              className={`absolute inset-0 z-10 flex items-center justify-center bg-black/80 transition-all ease-in-out ${timer === 5 ? 'opacity-0 delay-500' : 'opacity-100'}`}
+            >
+              <p className={`text-error text-8xl font-bold`}>
+                <span className="countdown">
+                  <span
+                    style={{ '--value': timer } as React.CSSProperties}
+                    aria-live="polite"
+                  >
+                    {timer}
+                  </span>
+                </span>
+              </p>
+            </div>
+          </div>
+          <FaArrowLeft size="150px" />
+        </div>
+        <p className="text-center text-2xl font-semibold transition-all">
+          {totalMatched} / {challenge.x.length}
+        </p>
+
+        {isDebugMode && (
+          <Debug
             predictions={lastJsonMessage?.d ?? []}
             challenge={challenge}
             matchedState={matchedState}
           />
-          <div
-            className={`absolute inset-0 z-10 flex items-center justify-center bg-black/80 transition-all ease-in-out ${timer === 5 ? 'opacity-0 delay-500' : 'opacity-100'}`}
-          >
-            <p className={`text-error text-8xl font-bold`}>
-              <span className="countdown">
-                <span
-                  style={{ '--value': timer } as React.CSSProperties}
-                  aria-live="polite"
-                >
-                  {timer}
-                </span>
-              </span>
-            </p>
-          </div>
-        </div>
-        <FaArrowLeft size="150px" />
+        )}
       </div>
-      <p className="text-center text-2xl font-semibold transition-all">
-        {totalMatched} / {challenge.x.length}
-      </p>
-
-      {isDebugMode && (
-        <Debug
-          predictions={lastJsonMessage?.d ?? []}
-          challenge={challenge}
-          matchedState={matchedState}
-        />
-      )}
-    </div>
+    </>
   )
 }
 
