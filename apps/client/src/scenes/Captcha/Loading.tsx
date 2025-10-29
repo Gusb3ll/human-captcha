@@ -15,7 +15,7 @@ const Loading = () => {
 
   return isRendered ? (
     <div
-      className={`absolute z-999 flex h-screen w-screen items-center justify-center gap-4 bg-black transition-all duration-1000 ${isLoading ? 'opacity-100' : 'opacity-0'}`}
+      className={`absolute flex h-screen w-screen items-center justify-center gap-4 bg-black transition-all duration-1000 ${isLoading ? 'z-20 opacity-100' : 'z-0 opacity-0'}`}
     >
       <span className="loading loading-spinner loading-xl text-white" />
       <p className="text-2xl text-white">Starting Webcam...</p>
