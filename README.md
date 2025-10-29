@@ -1,4 +1,4 @@
-# HumanCaptcha
+# Human Captcha
 
 # Credits
 
