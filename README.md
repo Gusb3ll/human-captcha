@@ -1,6 +1,27 @@
 # Human Captcha
 
-# Credits
+## Setup
+
+```
+cd ./human-captcha
+
+virtualenv env
+source ./env/bin/activate
+
+pip install ultralytics fastapi 'uvicorn[standard]'
+pnpm i
+
+# development
+
+pnpm dev
+
+# production
+
+pnpm build
+pnpm start
+```
+
+## Credits
 
 ```
 @software{yolo11_ultralytics,
